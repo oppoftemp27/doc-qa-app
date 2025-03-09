@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Q&A Application</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/config.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Document Q&A</h1>
+            <div class="header-controls">
+                <button id="api-settings-button" class="icon-button" title="API Settings">
+                    <span class="settings-icon">⚙️</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="upload-section" class="section">
+            <h2>Upload Document</h2>
+            <div class="upload-container">
+                <label for="file-input" class="file-label">Choose File</label>
+                <input type="file" id="file-input" accept=".pdf,.docx,.xlsx,.txt" class="file-input">
+                <div id="upload-status" class="upload-status">No file selected</div>
+            </div>
+            <div id="document-preview" class="document-preview hidden">
+              <div class="preview-header">
+                <h3 id="preview-title">Document Preview</h3>
+                <button id="full-preview-button" class="secondary-button">Show full preview of the document</button>
+              </div>
+              <div id="preview-content" class="preview-content"></div>
+            </div>
+        </section>
+
+        <section id="qa-section" class="section hidden">
+            <h2>Ask a Question</h2>
+            
+            <div class="query-container">
+                <div class="input-group">
+                    <textarea id="query-input" placeholder="Ask a question about your document" rows="3"></textarea>
+                    <div class="char-counter">
+                        <span id="char-count">0</span> characters
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <div class="toggle-container">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="mock-mode-toggle" checked>
+                            <span class="toggle-text">Document Analysis Mode</span>
+                            <span class="tooltip-text">When enabled, shows document content analysis instead of using OpenAI API</span>
+                        </label>
+                        
+                        <div class="api-usage">
+                            <span id="api-call-count">API Calls: 0</span>
+                            <button id="reset-api-usage" class="small-button">Reset</button>
+                        </div>
+                    </div>
+                    
+                    <button id="ask-button" class="primary-button" disabled>Ask</button>
+                </div>
+            </div>
+            
+            <div id="response-container" class="response-container hidden">
+                <h3>Response</h3>
+                <div id="response-content" class="response-content"></div>
+            </div>
+            
+            <div class="recommendations">
+                <h3>Suggested Questions</h3>
+                <div id="recommendation-chips" class="recommendation-chips"></div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="notification" class="notification"></div>
+    
+    <!-- API Configuration Panel -->
+    <div id="api-config-panel" class="config-panel hidden">
+        <h3>OpenAI API Configuration</h3>
+        <div class="form-group">
+            <label for="api-key-input">API Key:</label>
+            <input type="password" id="api-key-input" placeholder="Enter your OpenAI API key">
+        </div>
+        <div class="form-group">
+            <label for="model-select">Model:</label>
+            <select id="model-select">
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="gpt-4">GPT-4 (Higher quality, slower)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="temperature-slider">Temperature:</label>
+            <input type="range" id="temperature-slider" min="0" max="1" step="0.1" value="0.3">
+            <span id="temperature-value">0.3</span>
+        </div>
+        <div class="form-actions">
+            <button id="save-api-config" class="primary-button">Save</button>
+            <button id="close-api-config" class="secondary-button">Cancel</button>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Document Q&A Application &copy; 2025</p>
+    </footer>
+
+    <!-- Load scripts in the correct order -->
+    <script src="js/config.js"></script>
+    <script src="js/documentProcessor.js"></script>
+    <script src="js/llmService.js"></script>
+    <script src="js/app-integration-fixes.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/preview.js"></script>
+    <script src="js/api-debug.js"></script>
+    
+    <!-- Consolidated Direct Fix -->
+    <script>
+      // Consolidated Fix - Handles document preview and Q&A functions
+      window.addEventListener('load', function() {
+        console.log('Consolidated fix applied');
+        
+        // ===== 1. Fix document processing to show actual content =====
+        const originalProcessDocument = window.processDocument;
+        
+        window.processDocument = async function(file) {
+          console.log("Processing document:", file.name);
+          
+          try {
+            // Call original function to get document text
+            const extractedText = await originalProcessDocument(file);
+            
+            // Store text globally for access
+            window.documentText = extractedText;
+            window.lastProcessedDocumentText = extractedText;
+            
+            // Update document preview to show actual content
+            const previewElement = document.getElementById('document-preview');
+            const previewContent = document.getElementById('preview-content');
+            if (previewElement && previewContent) {
+              const previewLength = Math.min(500, extractedText.length);
+              const preview = extractedText.substring(0, previewLength) + 
+                           (extractedText.length > previewLength ? '...' : '');
+              
+              previewContent.innerHTML = `
+                <h3>${file.name}</h3>
+                <p><strong>Document Preview (Actual Content):</strong></p>
+                <pre style="max-height: 200px; overflow-y: auto; white-space: pre-wrap; background: #f5f5f5; padding: 10px; border-radius: 5px;">${preview}</pre>
+              `;
+              previewElement.classList.remove('hidden');
+              
+              // Ensure the full preview button is visible
+              const fullPreviewButton = document.getElementById('full-preview-button');
+              if (fullPreviewButton) {
+                fullPreviewButton.style.display = 'block';
+              }
+            }
+            
+            // Enable the full preview functionality
+            enableFullPreviewButton();
+            
+            console.log("Document processed successfully. Length:", extractedText.length);
+            return extractedText;
+          } catch (error) {
+            console.error("Error processing document:", error);
+            throw error;
+          }
+        };
+        
+        // Function to enable the full preview button
+        function enableFullPreviewButton() {
+          const fullPreviewButton = document.getElementById('full-preview-button');
+          const modal = document.getElementById('full-preview-modal');
+          const closeModalButton = document.getElementById('close-modal-button');
+          const fullPreviewContent = document.getElementById('full-preview-content');
+          
+          if (fullPreviewButton && modal && closeModalButton && fullPreviewContent) {
+            fullPreviewButton.addEventListener('click', function() {
+              // Display the full document in the modal
+              const docText = window.documentText || window.lastProcessedDocumentText || "";
+              
+              if (!docText) {
+                showNotification('No document content available.', 'error');
+                return;
+              }
+              
+              // Set the full document content in the modal
+              fullPreviewContent.innerHTML = `
+                <pre style="white-space: pre-wrap; padding: 10px;">${docText}</pre>
+              `;
+              
+              // Show the modal
+              modal.classList.remove('hidden');
+            });
+            
+            // Close modal when the close button is clicked
+            closeModalButton.addEventListener('click', function() {
+              modal.classList.add('hidden');
+            });
+            
+            // Close modal when clicking outside the content
+            modal.addEventListener('click', function(event) {
+              if (event.target === modal) {
+                modal.classList.add('hidden');
+              }
+            });
+          }
+        }
+        
+        // ===== 2. Override handleAskQuestion to show document content =====
+        const originalHandleAskQuestion = window.handleAskQuestion;
+        
+        window.handleAskQuestion = async function() {
+          console.log("Enhanced handleAskQuestion called");
+          
+          const query = document.getElementById('query-input').value.trim();
+          if (!query) {
+            showNotification('Please enter a question', 'error');
+            return;
+          }
+          
+          // Get document text from any available source
+          const docText = window.documentText || window.lastProcessedDocumentText || "";
+          console.log("Document text length:", docText.length);
+          
+          if (!docText) {
+            showNotification('No document content available. Please upload a document first.', 'error');
+            return;
+          }
+          
+          // Show loading state
+          const responseContainer = document.getElementById('response-container');
+          const responseContent = document.getElementById('response-content');
+          
+          if (responseContainer) {
+            responseContainer.classList.remove('hidden');
+          }
+          
+          if (responseContent) {
+            responseContent.innerHTML = '<div class="loading">Processing your question...</div>';
+          }
+          
+          // Set processing state
+          window.isProcessing = true;
+          if (typeof updateUIState === 'function') {
+            updateUIState();
+          }
+          
+          try {
+            // Generate response based on actual document content
+            const response = generateDocumentResponse(query, docText);
+            
+            // Display response
+            if (responseContent) {
+              responseContent.innerHTML = `<div class="response-text">${response}</div>`;
+            }
+            
+            // Update recommendation chips if function exists
+            if (typeof generateRecommendationChips === 'function') {
+              generateRecommendationChips(response);
+            }
+          } catch (error) {
+            console.error('Error generating response:', error);
+            
+            if (responseContent) {
+              responseContent.innerHTML = `<div class="error-text">Error: ${error.message}</div>`;
+            }
+            
+            showNotification(`Error: ${error.message}`, 'error');
+          }
+          
+          // Reset processing state
+          window.isProcessing = false;
+          if (typeof updateUIState === 'function') {
+            updateUIState();
+          }
+        };
+        
+        // ===== 3. Generate document response function =====
+        function generateDocumentResponse(query, documentText) {
+          console.log("Generating response for query:", query);
+          
+          const queryLower = query.toLowerCase();
+          const lines = documentText.split('\n').filter(line => line.trim());
+          const words = documentText.split(/\s+/).filter(word => word.trim());
+          
+          // Format based on query type
+          if (queryLower.includes('summary') || queryLower.includes('about')) {
+            return generateSummaryResponse(documentText);
+          } else if (queryLower.includes('find') || queryLower.includes('search')) {
+            return generateSearchResponse(query, documentText);
+          } else {
+            return generateDefaultResponse(documentText);
+          }
+        }
+        
+        // Generate a summary of the document
+        function generateSummaryResponse(documentText) {
+          const lines = documentText.split('\n').filter(line => line.trim());
+          const words = documentText.split(/\s+/).filter(word => word.trim());
+          
+          // Get title or first line
+          const title = lines[0] || "Untitled Document";
+          
+          // Get significant lines (might be headings or important content)
+          const significantLines = lines
+            .filter(line => 
+              line === line.toUpperCase() || // ALL CAPS lines
+              (line.length < 50 && line.length > 10) || // Short lines (potential headings)
+              line.endsWith(':') || // Lines ending with colon
+              /^[A-Z0-9]/.test(line) // Lines starting with capital letter or number
+            )
+            .slice(0, 5);
+          
+          // Create a preview with the first part of the document
+          const preview = documentText.substring(0, 300) + 
+                        (documentText.length > 300 ? '...' : '');
+          
+          return `## Document Summary
+
+**Document Title/First Line**: ${title}
+
+**Document Statistics**:
+- Contains ${lines.length} lines of text
+- Contains approximately ${words.length} words
+- Total length: ${documentText.length} characters
+
+**Key Content**:
+${significantLines.map(line => `- ${line}`).join('\n')}
+
+**Document Preview**:
+\`\`\`
+${preview}
+\`\`\`
+
+This is the actual content from your document, not a mock response.`;
+        }
+        
+        // Search for specific content in the document
+        function generateSearchResponse(query, documentText) {
+          // Extract search terms from query
+          const searchTerms = query.toLowerCase()
+            .replace(/find|search|for|about|where|is|are|show|me/g, ' ')
+            .split(/\s+/)
+            .filter(word => word.length > 2);
+          
+          if (searchTerms.length === 0) {
+            return `I couldn't identify specific search terms in your query. Please try again with more specific terms to search for in the document.`;
+          }
+          
+          // Find matching lines
+          const lines = documentText.split('\n');
+          const matchingLines = [];
+          
+          for (const line of lines) {
+            if (line.trim() && searchTerms.some(term => line.toLowerCase().includes(term))) {
+              matchingLines.push(line.trim());
+            }
+          }
+          
+          if (matchingLines.length === 0) {
+            return `I couldn't find any content matching "${searchTerms.join(', ')}" in your document. Please try different search terms.`;
+          }
+          
+          return `## Search Results for "${searchTerms.join(', ')}"
+
+Found ${matchingLines.length} matching lines in your document:
+
+${matchingLines.slice(0, 10).map((line, i) => `${i+1}. ${line}`).join('\n')}
+${matchingLines.length > 10 ? `\n...and ${matchingLines.length - 10} more matches.` : ''}
+
+This search was performed on the actual content of your document.`;
+        }
+        
+        // Default response showing document content
+        function generateDefaultResponse(documentText) {
+          const lines = documentText.split('\n').filter(line => line.trim());
+          const words = documentText.split(/\s+/).filter(word => word.trim());
+          
+          // Determine a reasonable preview length based on document size
+          const previewLength = Math.min(500, Math.max(documentText.length, 100));
+          const preview = documentText.substring(0, previewLength) + 
+                        (documentText.length > previewLength ? '...' : '');
+          
+          return `## Document Content Analysis
+
+Your document contains ${lines.length} lines and approximately ${words.length} words.
+
+**Document Preview**:
+\`\`\`
+${preview}
+\`\`\`
+
+This is showing the actual content of your document. To see specific information, try asking more specific questions like:
+- "What is this document about?"
+- "Find mentions of [specific term]"
+- "Give me a summary of this document"`;
+        }
+        
+        // ===== 4. Fix settings button =====
+        const settingsBtn = document.getElementById('api-settings-button');
+        const configPanel = document.getElementById('api-config-panel');
+        
+        if (settingsBtn && configPanel) {
+          // Remove any existing click handlers by using onclick directly
+          settingsBtn.onclick = function() {
+            console.log("Settings button clicked");
+            configPanel.classList.remove('hidden');
+            
+            // Load current config into UI
+            loadCurrentConfig();
+          };
+          
+          // Handle close button
+          const closeBtn = document.getElementById('close-api-config');
+          if (closeBtn) {
+            closeBtn.onclick = function() {
+              configPanel.classList.add('hidden');
+            };
+          }
+          
+          // Handle save button
+          const saveBtn = document.getElementById('save-api-config');
+          if (saveBtn) {
+            saveBtn.onclick = function() {
+              const apiKeyInput = document.getElementById('api-key-input');
+              const modelSelect = document.getElementById('model-select');
+              const temperatureSlider = document.getElementById('temperature-slider');
+              
+              // Update configuration
+              if (typeof LLM_CONFIG !== 'undefined') {
+                if (apiKeyInput && apiKeyInput.value.trim()) {
+                  LLM_CONFIG.openai.apiKey = apiKeyInput.value.trim();
+                }
+                
+                if (modelSelect) {
+                  LLM_CONFIG.openai.model = modelSelect.value;
+                }
+                
+                if (temperatureSlider) {
+                  LLM_CONFIG.openai.temperature = parseFloat(temperatureSlider.value);
+                }
+                
+                // Try to reinitialize if the function exists
+                if (typeof initializeOpenAIIntegration === 'function') {
+                  initializeOpenAIIntegration();
+                }
+                
+                // Save to localStorage for persistence
+                localStorage.setItem('openai_api_key', LLM_CONFIG.openai.apiKey);
+                localStorage.setItem('openai_model', LLM_CONFIG.openai.model);
+                localStorage.setItem('openai_temperature', LLM_CONFIG.openai.temperature);
+              }
+              
+              // Show notification
+              showNotification('API settings saved successfully', 'success');
+              
+              // Hide the panel
+              configPanel.classList.add('hidden');
+            };
+          }
+        }
+        
+        // Load current config into UI
+        function loadCurrentConfig() {
+          const apiKeyInput = document.getElementById('api-key-input');
+          const modelSelect = document.getElementById('model-select');
+          const temperatureSlider = document.getElementById('temperature-slider');
+          const temperatureValue = document.getElementById('temperature-value');
+          
+          if (apiKeyInput && LLM_CONFIG?.openai?.apiKey && 
+              LLM_CONFIG.openai.apiKey !== 'your-openai-api-key') {
+              apiKeyInput.value = LLM_CONFIG.openai.apiKey;
+          }
+          
+          if (modelSelect && LLM_CONFIG?.openai?.model) {
+              modelSelect.value = LLM_CONFIG.openai.model;
+          }
+          
+          if (temperatureSlider && LLM_CONFIG?.openai?.temperature !== undefined) {
+              temperatureSlider.value = LLM_CONFIG.openai.temperature;
+              if (temperatureValue) {
+                  temperatureValue.textContent = LLM_CONFIG.openai.temperature;
+              }
+          }
+        }
+        
+        // ===== 5. Load saved API settings =====
+        if (typeof LLM_CONFIG !== 'undefined') {
+          const savedApiKey = localStorage.getItem('openai_api_key');
+          const savedModel = localStorage.getItem('openai_model');
+          const savedTemperature = localStorage.getItem('openai_temperature');
+          
+          if (savedApiKey && savedApiKey !== 'your-openai-api-key') {
+            console.log('Loading saved API key from localStorage');
+            LLM_CONFIG.openai.apiKey = savedApiKey;
+          }
+          
+          if (savedModel) {
+            console.log('Loading saved model from localStorage');
+            LLM_CONFIG.openai.model = savedModel;
+          }
+          
+          if (savedTemperature) {
+            console.log('Loading saved temperature from localStorage');
+            LLM_CONFIG.openai.temperature = parseFloat(savedTemperature);
+          }
+          
+          // Re-initialize with saved settings
+          if (typeof initializeOpenAIIntegration === 'function') {
+            initializeOpenAIIntegration();
+          }
+        }
+        
+        // ===== 6. Ensure notification works =====
+        if (typeof showNotification !== 'function') {
+          window.showNotification = function(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            if (!notification) return;
+            
+            notification.textContent = message;
+            notification.className = `notification show ${type}`;
+            
+            setTimeout(() => {
+              notification.className = notification.className.replace('show', '');
+            }, 5000);
+          };
+        }
+        
+        console.log('All fixes applied successfully');
+      });
+    </script>
+
+    <div id="full-preview-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-title">Document Preview</h3>
+          <button id="close-modal-button" class="icon-button">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="full-preview-content" class="full-preview-content"></div>
+        </div>
+      </div>
+    </div>
+</body>
+</html>

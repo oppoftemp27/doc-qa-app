@@ -1,0 +1,50 @@
+2025-03-07 01:10:26,242 - INFO: ====== WebDriver manager ======
+2025-03-07 01:10:26,425 - INFO: Get LATEST chromedriver version for google-chrome
+2025-03-07 01:10:26,535 - INFO: Get LATEST chromedriver version for google-chrome
+2025-03-07 01:10:26,606 - INFO: Driver [/Users/shash/.wdm/drivers/chromedriver/mac64/133.0.6943.141/chromedriver-mac-arm64/chromedriver] found in cache
+2025-03-07 01:10:28,379 - INFO: Browser initialized successfully
+2025-03-07 01:10:28,750 - INFO: Navigated to application at http://localhost:8000/
+2025-03-07 01:10:28,750 - INFO: Starting file upload test
+2025-03-07 01:10:28,780 - INFO: Attempting to upload: /Users/shash/vscode/Projects/doc-qa-app/test/selenium/test_files/text_as_pdf.pdf
+2025-03-07 01:10:30,813 - INFO: File upload successful
+2025-03-07 01:10:30,813 - INFO: Starting question asking test
+2025-03-07 01:10:30,995 - INFO: Question asking test completed successfully
+2025-03-07 01:10:31,053 - INFO: Navigated to application at http://localhost:8000/
+2025-03-07 01:10:31,053 - INFO: Starting file upload test
+2025-03-07 01:10:31,069 - INFO: Attempting to upload: /Users/shash/vscode/Projects/doc-qa-app/test/selenium/test_files/text_as_pdf.pdf
+2025-03-07 01:10:33,092 - INFO: File upload successful
+2025-03-07 01:10:33,147 - INFO: Navigated to application at http://localhost:8000/
+2025-03-07 01:10:33,147 - INFO: Starting page load test
+2025-03-07 01:10:33,164 - INFO: Page load test completed successfully
+2025-03-07 01:10:33,248 - INFO: Browser closed successfully
+2025-03-07 01:21:47,495 - INFO: ====== WebDriver manager ======
+2025-03-07 01:21:47,685 - INFO: Get LATEST chromedriver version for google-chrome
+2025-03-07 01:21:47,764 - INFO: Get LATEST chromedriver version for google-chrome
+2025-03-07 01:21:47,834 - INFO: Driver [/Users/shash/.wdm/drivers/chromedriver/mac64/133.0.6943.141/chromedriver-mac-arm64/chromedriver] found in cache
+2025-03-07 01:21:49,234 - INFO: Browser initialized successfully
+2025-03-07 01:21:49,642 - INFO: Navigated to application at http://localhost:8000/
+2025-03-07 01:21:49,642 - INFO: Starting file upload test
+2025-03-07 01:21:49,672 - INFO: Attempting to upload: /Users/shash/vscode/Projects/doc-qa-app/test/selenium/test_files/text_as_pdf.pdf
+2025-03-07 01:21:51,704 - INFO: File upload successful
+2025-03-07 01:21:51,704 - INFO: Starting question asking test
+2025-03-07 01:21:51,876 - INFO: Question asking test completed successfully
+2025-03-07 01:21:51,933 - INFO: Navigated to application at http://localhost:8000/
+2025-03-07 01:21:51,933 - INFO: Starting file upload test
+2025-03-07 01:21:51,949 - INFO: Attempting to upload: /Users/shash/vscode/Projects/doc-qa-app/test/selenium/test_files/text_as_pdf.pdf
+2025-03-07 01:21:53,971 - INFO: File upload successful
+2025-03-07 01:21:54,026 - INFO: Navigated to application at http://localhost:8000/
+2025-03-07 01:21:54,026 - INFO: Starting page load test
+2025-03-07 01:21:54,043 - INFO: Page load test completed successfully
+2025-03-07 01:21:54,126 - INFO: Browser closed successfully
+2025-03-07 01:34:08,166 - INFO: ====== WebDriver manager ======
+2025-03-07 01:34:08,354 - INFO: Get LATEST chromedriver version for google-chrome
+2025-03-07 01:34:08,438 - INFO: Get LATEST chromedriver version for google-chrome
+2025-03-07 01:34:08,514 - INFO: Driver [/Users/shash/.wdm/drivers/chromedriver/mac64/133.0.6943.141/chromedriver-mac-arm64/chromedriver] found in cache
+2025-03-07 01:34:10,364 - INFO: Browser initialized successfully
+2025-03-07 01:34:10,776 - INFO: Navigated to application at http://localhost:8000/
+2025-03-07 01:34:10,789 - ERROR: Basic interaction test failed: False is not true : File input not visible
+2025-03-07 01:34:10,791 - INFO: Test completed
+2025-03-07 01:34:10,849 - INFO: Navigated to application at http://localhost:8000/
+2025-03-07 01:34:10,856 - INFO: Page loaded successfully
+2025-03-07 01:34:10,856 - INFO: Test completed
+2025-03-07 01:34:10,939 - INFO: Browser closed successfully
