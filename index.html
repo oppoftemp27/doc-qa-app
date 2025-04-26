@@ -12,6 +12,14 @@
         <div class="header-content">
             <h1>Document Q&A</h1>
             <div class="header-controls">
+                <!-- Dark Mode Toggle -->
+                <div class="dark-mode-label">Dark Mode</div>
+                <div class="toggle-container">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <span class="toggle-switch"></span>
+                    </label>
+                </div>
                 <button id="api-settings-button" class="icon-button" title="API Settings">
                     <span class="settings-icon">⚙️</span>
                 </button>
@@ -528,6 +536,22 @@ This is showing the actual content of your document. To see specific information
               notification.className = notification.className.replace('show', '');
             }, 5000);
           };
+        }
+
+        // ===== 7. Dark Mode Toggle =====
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+
+        if (darkModeToggle && body) {
+          darkModeToggle.addEventListener('change', function() {
+            if (this.checked) {
+              body.classList.add('dark-mode');
+              localStorage.setItem('darkMode', 'enabled');
+            } else {
+              body.classList.remove('dark-mode');
+              localStorage.setItem('darkMode', 'disabled');
+            }
+          });
         }
         
         console.log('All fixes applied successfully');

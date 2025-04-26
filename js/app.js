@@ -24,6 +24,7 @@ let notification;
 let apiSettingsButton;
 let configPanel;
 let uploadSection;
+let themeToggle;
 
 /**
  * Initialize the application
@@ -44,6 +45,7 @@ function initializeApp() {
     recommendationChips = document.getElementById('recommendation-chips');
     notification = document.getElementById('notification');
     uploadSection = document.getElementById('upload-section');
+    themeToggle = document.getElementById('theme-toggle');
     
     // Set up event listeners
     if (fileInput) fileInput.addEventListener('change', handleFileUpload);
@@ -51,6 +53,11 @@ function initializeApp() {
     if (askButton) askButton.addEventListener('click', handleAskQuestion);
     
     // Initialize UI state
+    
+    if(themeToggle) {
+        themeToggle.addEventListener('change', toggleTheme);
+    }
+
     updateUIState();
     
     // Initialize OpenAI integration
@@ -74,14 +81,51 @@ function initializeApp() {
     console.log('Document Q&A Application initialized');
 }
 
+function toggleTheme() {
+    const body = document.body;
+    const isDarkMode = body.classList.contains('dark-mode');
+    
+    if (isDarkMode) {
+        body.classList.remove('dark-mode');
+        body.classList.add('light-mode');
+        localStorage.setItem('theme', 'light-mode');
+    } else {
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark-mode');
+    }
+}
+
+// Check for user's preference on load
+window.onload = () => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.body.classList.add(savedTheme);
+        themeToggle.checked = savedTheme === 'dark-mode';
+    }
+};
 /**
  * Update the UI state based on current application state
  */
 function updateUIState() {
-    // Hide QA section until document is uploaded
-    if (qaSection) {
-        qaSection.classList.toggle('hidden', !documentText);
+    console.log("updateUIState function is running");
+    
+    // Show/hide sections based on whether a document is uploaded
+    if (uploadSection && qaSection && recommendationChips) {
+        if (documentText) {
+            // Document uploaded: show QA and recommendation, hide upload
+            uploadSection.style.display = 'none';
+            qaSection.style.display = 'block';
+            recommendationChips.style.display = 'block';
+        } else {
+            // No document: show upload, hide others
+            uploadSection.style.display = 'block';
+            qaSection.style.display = 'none';
+            recommendationChips.style.display = 'none';
+        }
     }
+
+
     
     // Disable ask button if no document or no query
     if (askButton && queryInput) {

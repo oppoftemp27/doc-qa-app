@@ -948,6 +948,56 @@ class DocumentQATestSuite(unittest.TestCase):
             self.record_test_result('negative', test_name, False, error_msg)
             return False
     
+    def test_dark_light_mode(self):
+        """Test that the user can change between dark and light mode."""
+        test_name = "Dark/Light mode"
+        try:
+            # Verify if the toggle button exists
+            toggle_button = self.wait_for_element(By.ID, "theme-toggle", 5)
+            self.assertIsNotNone(toggle_button, "Theme toggle button not found")
+
+            # Get the initial mode (check if the body has the class dark-mode)
+            body = self.driver.find_element(By.TAG_NAME, "body")
+            initial_mode = "dark" if "dark-mode" in body.get_attribute("class") else "light"
+            print(f"Initial mode: {initial_mode}")
+
+            # Click the toggle button
+            toggle_button.click()
+            time.sleep(1)  # Wait for the mode to change
+
+            # Check if the mode has changed
+            new_mode = "dark" if "dark-mode" in body.get_attribute("class") else "light"
+            print(f"New mode: {new_mode}")
+            self.assertNotEqual(initial_mode, new_mode, "Mode did not change after first click")
+
+            # Record test result
+            self.record_test_result('positive', test_name, True, f"Mode changed from {initial_mode} to {new_mode}")
+            
+            # Click again the toggle button
+            toggle_button.click()
+            time.sleep(1)  # Wait for the mode to change
+            
+            # Check if it goes back to the initial mode
+            final_mode = "dark" if "dark-mode" in body.get_attribute("class") else "light"
+            print(f"Final mode: {final_mode}")
+            self.assertEqual(initial_mode, final_mode, "Mode did not revert to initial mode after second click")
+
+            # Record test result
+            self.record_test_result('positive', test_name, True, f"Mode changed back to {final_mode}")
+
+            return True
+
+        except (AssertionError, NoSuchElementException, TimeoutException) as e:
+            self.record_test_result('positive', test_name, False, f"Error: {str(e)}")
+            return False
+        except Exception as e:
+            error_msg = f"Error during mode change: {str(e)}"
+            print(error_msg)
+            self.record_test_result('positive', test_name, False, error_msg)
+            return False
+
+
+
     # PERFORMANCE TEST CASES
     
     def test_character_counter_performance(self):
